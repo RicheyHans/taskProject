@@ -1,0 +1,27 @@
+# 의존성
+node_modules/
+
+# 환경 변수 / 비밀 키 (.env.example 은 커밋됨)
+.env
+.env.local
+.env.*.local
+
+# 빌드 산출물
+dist/
+
+# 테스트 산출물
+test-results/
+playwright-report/
+playwright/.cache/
+
+# 로컬 앱 데이터 (런타임 생성 컨설팅 내역)
+# ※ 두 PC에서 내역까지 공유하고 싶으면 아래 줄을 지우세요(대신 병합 충돌·용량 증가 가능)
+server/history.json
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+*.log
+
+# 로컬 도구 설정
+.claude/settings.local.json
