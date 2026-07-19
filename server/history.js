@@ -4,7 +4,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const FILE = join(dirname(fileURLToPath(import.meta.url)), "history.json");
+// 로컬(Express)에서는 server/history.json 에 영구 저장.
+// Vercel 서버리스에서는 프로젝트 파일시스템이 읽기 전용이므로 쓰기 가능한 /tmp 사용
+// (인스턴스별 임시 저장 — 영구 보관되지 않음).
+const FILE = process.env.VERCEL
+  ? "/tmp/history.json"
+  : join(dirname(fileURLToPath(import.meta.url)), "history.json");
 
 /** 프로젝트 식별 키 */
 function keyOf(category, project) {
@@ -20,7 +25,12 @@ function loadAll() {
 }
 
 function saveAll(data) {
-  writeFileSync(FILE, JSON.stringify(data, null, 2), "utf8");
+  try {
+    writeFileSync(FILE, JSON.stringify(data, null, 2), "utf8");
+  } catch (err) {
+    // 읽기 전용 FS 등에서 저장 실패해도 요청 자체는 성공 처리(내역만 미보관).
+    console.error("[history] 저장 실패(무시):", err instanceof Error ? err.message : err);
+  }
 }
 
 /** 한 프로젝트의 내역 목록(오래된→최신) */

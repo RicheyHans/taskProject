@@ -78,7 +78,21 @@ npm test
 npm run build
 ```
 
+## Vercel 배포
+
+프론트엔드(Vite)와 백엔드가 함께 배포됩니다.
+
+- **백엔드는 `/api` 서버리스 함수**로 동작합니다(`api/*.js` → 실제 로직은 `server/*.js` 재사용).
+  로컬 개발(`npm run dev:all`)은 기존 Express 서버를 그대로 사용합니다.
+- Vercel 프로젝트 설정에서 **Environment Variables**에 아래 값을 등록하세요(로컬 `.env`와 동일, `PORT` 제외):
+  `ANTHROPIC_API_KEY`, (선택) `ANTHROPIC_MODEL`, `SHEET_WEBAPP_URL`,
+  `NOTION_TOKEN`, `NOTION_PARENT_PAGE_ID`, `SLACK_WEBHOOK_URL`,
+  `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `MAIL_TO`.
+- 프리셋 **Vite** / Build `npm run build` / Output `dist` (기본값 그대로).
+- ⚠️ 컨설팅 **내역(history)** 은 서버리스에서 임시 저장(`/tmp`)이라 **영구 보관되지 않습니다**
+  (재배포·콜드스타트 시 초기화). 영구 보관하려면 외부 저장소(예: Vercel KV/Postgres) 연동이 필요합니다.
+
 ## 참고
 
-- 컨설팅 내역은 `server/history.json`에 **프로젝트별로 로컬 저장**됩니다(각 실행 환경마다 별도).
+- 컨설팅 내역은 로컬에서는 `server/history.json`에 **프로젝트별로 로컬 저장**됩니다(각 실행 환경마다 별도).
 - 각 사용자는 본인 키/토큰을 사용하며, 서로의 키는 공유되지 않습니다.

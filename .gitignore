@@ -9,6 +9,9 @@ node_modules/
 # 빌드 산출물
 dist/
 
+# Vercel CLI 로컬 산출물
+.vercel
+
 # 테스트 산출물
 test-results/
 playwright-report/
