@@ -3,100 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>업무 대시보드</title>
+    <title>업무 자동화 컨설팅 서비스</title>
   </head>
   <body>
-    <!-- 상단 헤더 배너 (자체 SVG 일러스트 + 애니메이션) -->
-    <header class="topbar">
-      <div class="topbar__bg" aria-hidden="true">
-        <svg class="topbar__shapes" viewBox="0 0 1200 240" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="tbg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#2a5ccc" />
-              <stop offset="0.55" stop-color="#1e46a0" />
-              <stop offset="1" stop-color="#152f6b" />
-            </linearGradient>
-          </defs>
-          <rect width="1200" height="240" fill="url(#tbg)" />
-          <circle class="blob b1" cx="170" cy="70" r="120" />
-          <circle class="blob b2" cx="1050" cy="185" r="150" />
-          <circle class="blob b3" cx="660" cy="18" r="90" />
-        </svg>
-      </div>
-      <div class="topbar__inner">
-        <span class="brand__mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32" width="30" height="30">
-            <rect x="4" y="4" width="10" height="10" rx="2.5" fill="#fff" />
-            <rect x="18" y="4" width="10" height="10" rx="2.5" fill="#fff" opacity="0.7" />
-            <rect x="4" y="18" width="10" height="10" rx="2.5" fill="#fff" opacity="0.7" />
-            <rect x="18" y="18" width="10" height="10" rx="2.5" fill="#fff" opacity="0.45" />
-          </svg>
-        </span>
-        <div class="brand__text">
-          <h1 class="topbar__title">업무 대시보드</h1>
-          <p class="topbar__tagline">스프레드시트 기반 업무 · 프로젝트 · 태스크 관리</p>
-        </div>
-      </div>
-    </header>
-
     <div id="app" class="app">
-      <!-- 좌측: 메뉴 (category 안내 → HOME → category 목록) -->
-      <aside class="sidebar">
-        <div class="sidebar__head">
-          <h2 class="sidebar__title">카테고리</h2>
-          <p class="sidebar__subtitle">카테고리를 눌러 프로젝트를 펼치세요</p>
+      <!-- 상단 네비게이션 -->
+      <header class="nav">
+        <div class="nav__inner">
+          <a class="brand" href="#" id="brand-link">
+            <span class="brand__mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="26" height="26">
+                <defs>
+                  <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#7c5cff" />
+                    <stop offset="1" stop-color="#4f46e5" />
+                  </linearGradient>
+                </defs>
+                <rect x="3" y="3" width="26" height="26" rx="8" fill="url(#bm)" />
+                <path d="M11 16.5l3.2 3.2L21.5 12" fill="none" stroke="#fff"
+                  stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="brand__name">업무 자동화 컨설팅 서비스</span>
+          </a>
+
+          <nav class="nav__actions" aria-label="주요 메뉴">
+            <button type="button" id="home-btn" class="nav__btn">홈</button>
+            <button type="button" id="sheet-btn" class="nav__btn nav__btn--ghost">
+              원본 시트
+              <span class="nav__ext" aria-hidden="true">↗</span>
+            </button>
+          </nav>
         </div>
-        <button type="button" id="home-btn" class="home-item">
-          <span class="home-item__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 11.4 12 4l9 7.4" />
-              <path d="M5 10v9h5v-5h4v5h5v-9" />
-            </svg>
-          </span>
-          <span class="home-item__label">HOME</span>
-        </button>
-        <nav id="menu" class="menu" aria-label="카테고리 메뉴">
-          <div class="state" id="state">데이터를 불러오는 중…</div>
-        </nav>
-        <!-- 프로젝트 목록 아래 상시 노출: 원본 스프레드시트 열기 -->
-        <button type="button" id="sheet-btn" class="sheet-item">
-          <span class="sheet-item__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="16" rx="2" />
-              <path d="M3 9h18M3 14h18M9 4v16M15 4v16" />
-            </svg>
-          </span>
-          <span class="sheet-item__label">프로젝트 입력</span>
-          <span class="sheet-item__ext" aria-hidden="true">↗</span>
-        </button>
-      </aside>
+      </header>
 
-      <!-- 우측: 본문 (선택한 project의 task 흐름) -->
-      <main class="content" id="content">
-        <div id="content-body" aria-live="polite">
-          <div class="placeholder" id="placeholder">
-            <p class="placeholder__title">프로젝트를 선택하세요</p>
-            <p class="placeholder__hint">
-              좌측 메뉴에서 카테고리를 펼친 뒤 프로젝트를 클릭하면 태스크가 여기에 표시됩니다.
-            </p>
-          </div>
+      <!-- 풀폭 콘텐츠 -->
+      <main class="page">
+        <div class="page__inner">
+          <!-- 본문: HOME(히어로+입력 폼) 또는 선택한 프로젝트의 태스크 -->
+          <div id="content-body" aria-live="polite"></div>
+
+          <!-- 등록된 프로젝트 둘러보기 (HOME 에서만 노출) -->
+          <section id="browse" class="browse" aria-label="등록된 프로젝트">
+            <div class="browse__head">
+              <h2 class="browse__title">등록된 프로젝트</h2>
+              <p class="browse__subtitle">카테고리를 눌러 프로젝트를 펼치고, 프로젝트를 선택하면 태스크가 표시됩니다.</p>
+            </div>
+            <nav id="menu" class="menu" aria-label="카테고리 메뉴">
+              <div class="state" id="state">데이터를 불러오는 중…</div>
+            </nav>
+          </section>
+
+          <!-- 태스크 화면 하단: 자동화 컨설팅 (프로젝트 선택 시에만 노출) -->
+          <footer class="consult">
+            <button type="button" id="btn-consult" class="consult__btn consult__btn--primary">
+              자동화 컨설팅 받기
+            </button>
+            <button type="button" id="btn-consult-test" class="consult__btn consult__btn--test">
+              컨설팅 미리보기(테스트)
+            </button>
+          </footer>
+
+          <!-- 프로젝트별 컨설팅 내역 -->
+          <section id="history" class="history" aria-label="컨설팅 내역"></section>
         </div>
-
-        <!-- 페이지 하단: 자동화 컨설팅 -->
-        <footer class="consult">
-          <button type="button" id="btn-consult" class="consult__btn consult__btn--primary">
-            자동화 컨설팅 받기
-          </button>
-          <button type="button" id="btn-consult-test" class="consult__btn consult__btn--test">
-            자동화 컨설팅 받기 테스트
-          </button>
-        </footer>
-
-        <!-- [2] 버튼 아래: 프로젝트별 컨설팅 내역 -->
-        <section id="history" class="history" aria-label="컨설팅 내역"></section>
       </main>
+
+      <footer class="site-foot">
+        <div class="site-foot__inner">
+          <span class="site-foot__brand">업무 자동화 컨설팅 서비스</span>
+          <span class="site-foot__note">스프레드시트 기반 · AI 자동화 제안</span>
+        </div>
+      </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

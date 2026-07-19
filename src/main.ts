@@ -1,6 +1,7 @@
 import "./style.css";
 import {
   fetchHierarchy,
+  appendProject,
   SPREADSHEET_URL,
   type CategoryNode,
   type ProjectNode,
@@ -12,6 +13,7 @@ import {
   type TaskItem,
   type ConsultingResult,
 } from "./consult";
+import { renderProjectForm } from "./project-form";
 
 const menuEl = document.getElementById("menu") as HTMLElement;
 const contentEl = document.getElementById("content-body") as HTMLElement;
@@ -125,20 +127,45 @@ function el<K extends keyof HTMLElementTagNameMap>(
 /** 현재 선택된(강조된) 프로젝트 버튼 */
 let activeProjectBtn: HTMLElement | null = null;
 
-/** HOME(안내) 화면을 그린다. 프로젝트 선택 해제 + 하단 버튼 숨김. */
-function renderPlaceholder(): void {
+/** 좌측 메뉴를 시트에서 다시 불러와 새로 그린다. (실패해도 조용히 무시) */
+async function refreshMenu(): Promise<void> {
+  try {
+    renderMenu(await fetchHierarchy());
+  } catch (err) {
+    console.error("메뉴 새로고침 실패:", err);
+  }
+}
+
+/** HOME 화면: 히어로 + 새 프로젝트 입력 폼을 그린다. */
+function renderHome(): void {
   contentEl.innerHTML = "";
-  const ph = el("div", "placeholder");
-  ph.id = "placeholder";
-  ph.appendChild(el("p", "placeholder__title", "프로젝트를 선택하세요"));
-  ph.appendChild(
+
+  // ── 히어로 ──
+  const hero = el("section", "hero");
+  hero.appendChild(el("span", "hero__eyebrow", "AUTOMATION CONSULTING"));
+  hero.appendChild(
+    el("h1", "hero__title", "반복 업무를 자동화 기회로 바꾸세요"),
+  );
+  hero.appendChild(
     el(
       "p",
-      "placeholder__hint",
-      "좌측 메뉴에서 카테고리를 펼친 뒤 프로젝트를 클릭하면 태스크가 여기에 표시됩니다.",
+      "hero__lead",
+      "프로젝트와 태스크를 등록하면, AI가 업무를 분석해 구체적인 자동화 방안을 제안합니다. PDF · Notion · Slack · Gmail로 바로 공유하세요.",
     ),
   );
-  contentEl.appendChild(ph);
+  contentEl.appendChild(hero);
+
+  // ── 입력 폼(별도 마운트 컨테이너: 성공 시 폼만 리셋되고 히어로는 유지) ──
+  const formMount = el("div", "home-form");
+  contentEl.appendChild(formMount);
+  renderProjectForm(formMount, {
+    onSubmit: async (data) => {
+      const appended = await appendProject(data); // 실패 시 throw → 폼이 에러 표시
+      // 저장 성공: 프로젝트 목록을 새로고침해 방금 추가한 프로젝트를 반영한다.
+      await refreshMenu();
+      return { appended };
+    },
+  });
 }
 
 /** HOME으로 이동한다. (펼친 카테고리는 그대로 유지) */
@@ -151,16 +178,27 @@ function goHome(): void {
   currentCtx = null;
   homeBtn?.classList.add("is-active");
   appEl.classList.remove("app--project"); // 하단 컨설팅 버튼 숨김
-  renderPlaceholder();
+  renderHome();
 }
 
-/** 우측 본문에 선택한 프로젝트의 태스크 흐름을 그린다. */
-function renderTasks(project: ProjectNode): void {
+/** 본문에 선택한 프로젝트의 태스크 흐름을 그린다. */
+function renderTasks(category: string, project: ProjectNode): void {
   contentEl.innerHTML = "";
+
+  // 브레드크럼: 홈으로 돌아가는 경로 표시
+  const crumb = el("nav", "crumb");
+  crumb.setAttribute("aria-label", "위치");
+  const backBtn = el("button", "crumb__home", "← 홈");
+  backBtn.type = "button";
+  backBtn.addEventListener("click", goHome);
+  crumb.appendChild(backBtn);
+  crumb.appendChild(el("span", "crumb__sep", "/"));
+  crumb.appendChild(el("span", "crumb__cat", category));
+  contentEl.appendChild(crumb);
 
   const head = el("header", "content__head");
   head.appendChild(el("h2", "content__title", project.project));
-  head.appendChild(el("p", "content__meta", `태스크 ${project.tasks.length}개`));
+  head.appendChild(el("p", "content__meta", `${category} · 태스크 ${project.tasks.length}개`));
   contentEl.appendChild(head);
 
   if (project.tasks.length === 0) {
@@ -207,8 +245,9 @@ function selectProject(
   currentCtx = { category, project };
   homeBtn?.classList.remove("is-active");
   appEl.classList.add("app--project"); // 하단 컨설팅 버튼 노출
-  renderTasks(project);
+  renderTasks(category, project);
   void renderHistory(category, project.project);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /** 카테고리 하나(토글 + 프로젝트 목록)를 만든다. */
@@ -317,9 +356,13 @@ function wireConsultButtons(): void {
     void openConsulting("sample");
   });
 
-  // HOME 버튼: 언제든 안내 화면으로 복귀. 초기 상태도 HOME.
+  // HOME 버튼 / 브랜드 로고: 언제든 홈으로 복귀. 초기 상태도 HOME.
   homeBtn?.addEventListener("click", goHome);
   homeBtn?.classList.add("is-active");
+  document.getElementById("brand-link")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    goHome();
+  });
 
   // 프로젝트 입력: 원본 스프레드시트를 새 탭으로 연다.
   document.getElementById("sheet-btn")?.addEventListener("click", () => {
@@ -340,4 +383,5 @@ async function init(): Promise<void> {
 }
 
 wireConsultButtons();
+renderHome(); // 초기 HOME 화면 = 새 프로젝트 입력 폼
 init();

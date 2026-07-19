@@ -33,11 +33,41 @@ export interface TaskNode {
   issue: string;
 }
 
-/** gviz CSV 엔드포인트 URL을 만든다. */
+/** gviz CSV 엔드포인트 URL을 만든다. (매 호출마다 캐시 무효화 파라미터 부여) */
 function buildCsvUrl(): string {
   const base = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq`;
   const params = new URLSearchParams({ tqx: "out:csv", gid: SHEET_GID });
+  // 시트에 값을 추가한 직후 새로고침할 때 옛 데이터가 캐시되지 않도록 유니크 값을 붙인다.
+  params.set("_", String(Date.now()));
   return `${base}?${params.toString()}`;
+}
+
+/** HOME 폼에서 입력한 태스크들 */
+export interface NewTaskInput {
+  task: string;
+  description: string;
+  issue: string;
+}
+
+/**
+ * 새 프로젝트(카테고리·프로젝트 + 태스크들)를 로컬 API 서버를 통해
+ * 시트에 추가한다. 성공 시 추가된 행 수를 반환한다.
+ */
+export async function appendProject(payload: {
+  category: string;
+  project: string;
+  tasks: NewTaskInput[];
+}): Promise<number> {
+  const res = await fetch("/api/sheet/append", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error || `요청 실패 (HTTP ${res.status})`);
+  }
+  return Number(data.appended) || payload.tasks.length;
 }
 
 /**
@@ -160,7 +190,7 @@ function indexOf(header: string[], name: string, fallback: number): number {
 
 /** 시트를 가져와 계층 구조로 반환한다. */
 export async function fetchHierarchy(): Promise<CategoryNode[]> {
-  const res = await fetch(buildCsvUrl(), { redirect: "follow" });
+  const res = await fetch(buildCsvUrl(), { redirect: "follow", cache: "no-store" });
   if (!res.ok) {
     throw new Error(`시트를 불러오지 못했습니다 (HTTP ${res.status}).`);
   }
